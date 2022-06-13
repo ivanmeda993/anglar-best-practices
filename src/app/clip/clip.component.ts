@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { ClipService } from '../services/clip.service';
 
 @Component({
   selector: 'app-clip',
@@ -8,13 +9,18 @@ import { ActivatedRoute, Params } from '@angular/router';
 })
 export class ClipComponent implements OnInit {
   id = '';
+  userClips: any[] = [];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private clipService: ClipService
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe(({ id }: Params) => {
       this.id = id;
     });
+    this.onActivate();
   }
 
   onActivate() {

@@ -35,7 +35,6 @@ export class UserAuthService {
       )
       .subscribe((data) => {
         this.redirect = data.authOnly ?? false;
-        console.log(data);
       });
   }
 
