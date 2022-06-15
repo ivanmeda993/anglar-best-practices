@@ -1,82 +1,113 @@
 <section class="container mx-auto my-8 bg-secondary p-6">
   <div class="rounded relative flex flex-col">
     <div class="font-bold mb-6">Upload Video</div>
-
-    <ng-container *ngIf="!nextStep; else uploadFormContainer">
-      <!-- Upload Dropbox -->
-      <div
-        (dragend)="isDragover = false"
-        (dragenter)="isDragover = true"
-        (dragleave)="isDragover = false"
-        (dragover)="isDragover = true"
-        (drop)="storeFile($event)"
-        (mouseleave)="isDragover = false"
-        [ngClass]="{
-          'bg-indigo-400 border-indigo-400 border-solid': isDragover
-        }"
-        app-event-blocker
-        class="w-full px-10 py-40 rounded text-center cursor-pointer border border-dashed border-gray-400 transition duration-500 hover:text-white hover:bg-indigo-400 hover:border-indigo-400 hover:border-solid text-xl"
+    <ng-container>
+      <span
+        *ngIf="!ffmpegService.isReady; else uploadEditorContainer"
+        class="material-icons text-center text-[4rem] p-8 animate-spin"
       >
-        <h5>Drop your file here (mp4 only!)</h5>
-      </div>
-      <input
-        (change)="storeFile($event)"
-        class="mt-5 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        type="file"
-      />
+        settings
+      </span>
     </ng-container>
-    <ng-template #uploadFormContainer>
-      <!-- Video Editor -->
-      <div>
-        <!-- Form -->
-        <form (ngSubmit)="uploadFile()" [formGroup]="uploadForm">
-          <!-- Screenshots -->
-          <h2 class="mb-4 text-xl">Select a Thumbnail</h2>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div class="border-8 cursor-pointer border-green-400">
-              <img src="assets/img/1.jpg" />
-            </div>
-            <div class="border-8 cursor-pointer border-transparent">
-              <img src="assets/img/2.jpg" />
-            </div>
-            <div class="border-8 cursor-pointer border-transparent">
-              <img src="assets/img/3.jpg" />
-            </div>
-          </div>
-
-          <!-- Title -->
-
-          <div class="mt-4">
-            <label class="block text-xl mb-4">Title</label>
-            <app-input [control]="title" placeholder="Enter title"></app-input>
-          </div>
-
-          <div class="mt-4 text-right">
-            <app-alert *ngIf="isUploading" [color]="alertColor" class="my-2">
-              {{ alertMessage }}
-            </app-alert>
-            <div class="flex justify-between items-center">
-              <button
-                (click)="cancelUpload()"
-                [disabled]="inSubmission"
-                [ngClass]="{ 'disabled-btn': inSubmission }"
-                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm rounded-md text-white bg-transparent hover:bg-indigo-700 focus:outline-none"
-                type="button"
+    <ng-template #uploadEditorContainer>
+      <ng-container *ngIf="!nextStep; else uploadFormContainer">
+        <!-- Upload Dropbox -->
+        <div
+          (dragend)="isDragover = false"
+          (dragenter)="isDragover = true"
+          (dragleave)="isDragover = false"
+          (dragover)="isDragover = true"
+          (drop)="storeFile($event)"
+          (mouseleave)="isDragover = false"
+          [ngClass]="{
+            'bg-indigo-400 border-indigo-400 border-solid': isDragover
+          }"
+          app-event-blocker
+          class="w-full px-10 py-40 rounded text-center cursor-pointer border border-dashed border-gray-400 transition duration-500 hover:text-white hover:bg-indigo-400 hover:border-indigo-400 hover:border-solid text-xl"
+        >
+          <h5>Drop your file here (mp4 only!)</h5>
+          <span
+            *ngIf="ffmpegService.isRunning"
+            class="material-icons text-center text-6xl p-8 animate-spin"
+          >
+            autorenew
+          </span>
+        </div>
+        <input
+          (change)="storeFile($event)"
+          class="mt-5 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          type="file"
+        />
+      </ng-container>
+      <ng-template #uploadFormContainer>
+        <!-- Video Editor -->
+        <div>
+          <!-- Form -->
+          <form (ngSubmit)="uploadFile()" [formGroup]="uploadForm">
+            <!-- Screenshots -->
+            <h2 class="mb-4 text-xl">Select a Thumbnail</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div
+                (click)="changeThumbnail(screenshot)"
+                *ngFor="let screenshot of screenshots"
+                [ngClass]="
+                  selectedScreenshot === screenshot
+                    ? 'bg-indigo-400 border-indigo-400 border-solid'
+                    : 'border-gray-400'
+                "
+                class="border-8 cursor-pointer hover:scale-105 hover:shadow-2xl shadow-white transition transform duration-200 ease-in-out"
               >
-                Cancel
-              </button>
-              <button
-                [disabled]="inSubmission"
-                [ngClass]="{ 'disabled-btn': inSubmission }"
-                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
-                type="submit"
-              >
-                Publish
-              </button>
+                <img [src]="screenshot | safeURL" />
+                <span
+                  *ngIf="selectedScreenshot === screenshot"
+                  class="material-icons w-full text-6xl text-center text-indigo-500"
+                  >grade</span
+                >
+                <span
+                  *ngIf="selectedScreenshot !== screenshot"
+                  class="material-icons w-full text-6xl text-center"
+                  >fit_screen</span
+                >
+              </div>
             </div>
-          </div>
-        </form>
-      </div>
+
+            <!-- Title -->
+
+            <div class="mt-4">
+              <label class="block text-xl mb-4">Title</label>
+              <app-input
+                [control]="title"
+                placeholder="Enter title"
+              ></app-input>
+            </div>
+
+            <div class="mt-4 text-right">
+              <app-alert *ngIf="isUploading" [color]="alertColor" class="my-2">
+                {{ alertMessage }}
+              </app-alert>
+              <div class="flex justify-between items-center">
+                <button
+                  (click)="cancelUpload()"
+                  [disabled]="inSubmission"
+                  [ngClass]="{ 'disabled-btn': inSubmission }"
+                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm rounded-md text-white bg-transparent hover:bg-indigo-700 focus:outline-none"
+                  type="button"
+                >
+                  Cancel
+                </button>
+                <button
+                  [disabled]="inSubmission"
+                  [ngClass]="{ 'disabled-btn': inSubmission }"
+                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+                  type="submit"
+                >
+                  Publish
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </ng-template>
     </ng-template>
   </div>
 </section>

@@ -19,26 +19,29 @@
 <!-- User's Video Section -->
 <div class="container mx-auto my-8">
   <!-- Video List -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4 md:px-0">
     <div
       *ngFor="let clip of userClips"
       class="mt-6 rounded-tl-2xl rounded-br-2xl shadow-xl bg-secondary flex flex-col justify-start"
     >
       <!-- Image -->
-      <a href="#">
+      <a [routerLink]="['/', 'clip', clip.docId]">
         <img
-          class="card-img-top rounded-tl-2xl w-full"
-          src="assets/img/1.jpg"
+          [src]="clip.screenshotUrl"
+          class="card-img-top rounded-tl-2xl w-full h-[400px] object-cover aspect-video"
+          crossorigin
         />
       </a>
 
       <!-- Body -->
       <div class="p-6 text-2xl">
         <!-- Link -->
-        <a class="font-bold mb-2"> {{ clip.title }} </a>
+        <a [routerLink]="['/', 'clip', clip.docId]" class="font-bold mb-2">
+          {{ clip.title }}
+        </a>
         <a
-          class="bg-gray-400 text-white px-2 py-1 ml-2 text-sm rounded"
-          href="#"
+          (click)="copyToClipboard($event, clip.docId)"
+          class="bg-gray-400 text-white px-2 py-1 ml-2 text-sm rounded cursor-copy"
         >
           Copy Link
         </a>
